@@ -8,7 +8,7 @@ source "lib.sh"
 
 # Ensure debootstrap and fakechroot is installed
 install=0
-pkgs=(debootstrap fakechroot fakeroot)
+pkgs=(debootstrap)
 for pkg in ${pkgs[@]}; do
   if ! (dpkg -l | grep -q "^ii  ${pkg} "); then
     install=1
@@ -32,7 +32,7 @@ if [[ -d "${BOOTSTRAP_DIR}" ]] && [[ -n "$(ls "${BOOTSTRAP_DIR}")" ]]; then
   read -r in
   if [[ "${in:0:1}" == "y" ]]; then
     # Remove the bootstrap dir contents
-    find "${BOOTSTRAP_DIR}" -maxdepth 1 | tail -n+2 | xargs sudo rm -rf
+    find "${BOOTSTRAP_DIR}" -maxdepth 1 | tail -n+2 | xargs rm -rf
   else
     echo Exiting.
     clean-exit
@@ -40,8 +40,7 @@ if [[ -d "${BOOTSTRAP_DIR}" ]] && [[ -n "$(ls "${BOOTSTRAP_DIR}")" ]]; then
 fi
 
 # Bootstrap directory
-fakechroot fakeroot debootstrap \
-  --keep-debootstrap-dir \
+debootstrap \
   "${BOOTSTRAP_RELEASE}" \
   "bootstrap/" \
   "${BOOTSTRAP_MIRROR_URI}"
@@ -51,6 +50,12 @@ fakechroot fakeroot debootstrap \
   #--include="$(pkgs base)" \
   #--components=main,restricted,universe,multiverse \
   #--extra-suites=jammy-updates \
+
+# Add mount points
+echo "Adding mount points"
+mount --make-private --rbind /dev  "${BOOTSTRAP_DIR}/dev"
+mount --make-private --rbind /proc "${BOOTSTRAP_DIR}/proc"
+mount --make-private --rbind /sys  "${BOOTSTRAP_DIR}/sys"
 
 # Start base configuration
 ./base-configuration.sh

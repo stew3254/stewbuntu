@@ -1,0 +1,2 @@
+/^#?PermitRootLogin/ s/.*/PermitRootLogin no/
+/^#?PasswordAuthentication/ s/.*/PasswordAuthentication no/

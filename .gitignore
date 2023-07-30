@@ -1,4 +1,4 @@
-bootstrap/
+*bootstrap/
 .env
 .tmp_env
 .idea/
