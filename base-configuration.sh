@@ -21,11 +21,7 @@ chroot "${BOOTSTRAP_DIR}" apt-get install -y $(pkgs base)
 sudo apt-get -y purge --auto-remove vim emacs nano
 
 # Tell netplan to user network manager
-cp configurations/netplan-network-manager.yml "${BOOTSTRAP_DIR}/etc/netplan/01-network-manager-all.yml"
-
-# Configure SSH
-# TODO look into using git to set up appropriate branches for configuring /etc
-sed -ri -f "configurations/sed-base-ssh" "${BOOTSTRAP_DIR}/etc/ssh/sshd_config"
+#cp configurations/netplan-network-manager.yml "${BOOTSTRAP_DIR}/etc/netplan/01-network-manager-all.yml"
 
 # Add default user to the system
 chroot "${BOOTSTRAP_DIR}" useradd -d /home/stew3254 -G sudo -s /bin/bash stew3254
@@ -40,15 +36,23 @@ if [[ -f "${GIT_PRIV_KEY}" ]]; then
   cp "${GIT_PRIV_KEY}" "${BOOTSTRAP_DIR}/home/stew3254/.ssh/git"
   cp "${GIT_PRIV_KEY}.pub" "${BOOTSTRAP_DIR}/home/stew3254/.ssh/git.pub"
 else
-  # TODO add ability to pull down git config from home server
+  # TODO add ability to pull down git config from website
   echo "Cannot pull keys from server (yet). Functionality not implemented"
 fi
 #curl -sL https://github.com/stew3254.keys -o "${BOOTSTRAP_DIR}/home/stew3254/.ssh/authorized_keys"
 
-# TODO come up with a solution to make this work since you need PTY
 # Initialize dotfiles for user
-#chroot "${BOOTSTRAP_DIR}" sudo -u stew3254 yadm init
-#chroot "${BOOTSTRAP_DIR}" sudo -u stew3254 yadm remote add origin git@git.rtstewart.dev:/srv/git/dotfiles.git
-#if [[ -f "${BOOTSTRAP_DIR}/home/stew3254/.ssh/git" ]]; then
-#  chroot "${BOOTSTRAP_DIR}" yadm pull origin main
-#fi
+chroot "${BOOTSTRAP_DIR}" su - stew3254 -c 'yadm init'
+chroot "${BOOTSTRAP_DIR}" su - stew3254 -c 'yadm remote add origin git@git.rtstewart.dev:/srv/git/dotfiles.git'
+if [[ -f "${BOOTSTRAP_DIR}/home/stew3254/.ssh/git" ]]; then
+  chroot "${BOOTSTRAP_DIR}" su - stew3254 -c 'yadm pull origin main'
+fi
+
+# Set up git in /etc
+chroot "${BOOTSTRAP_DIR}" git init
+chroot "${BOOTSTRAP_DIR}" git remote add origin ssh://git.rtstewart.dev:/srv/git/etc.git
+if [[ -n "${MACHINE_LABEL}" ]]; then
+  chroot "${BOOTSTRAP_DIR}" git pull origin "${MACHINE_LABEL}"
+else
+  chroot "${BOOTSTRAP_DIR}" git pull origin main
+fi

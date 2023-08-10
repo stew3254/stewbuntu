@@ -19,3 +19,6 @@ zip
 unzip
 wget
 rsync
+apt-file
+apt-transport-https
+devscripts

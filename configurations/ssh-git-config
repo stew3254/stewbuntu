@@ -1,4 +1,5 @@
 Host git.rtstewart.dev
   Hostname git.rtstewart.dev
+  User git
   Port 42069
   IdentityFile ~/.ssh/git

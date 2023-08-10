@@ -58,7 +58,7 @@ mount --make-private --rbind /proc "${BOOTSTRAP_DIR}/proc"
 mount --make-private --rbind /sys  "${BOOTSTRAP_DIR}/sys"
 
 # Start base configuration
-./base-configuration.sh
+#./base-configuration.sh
 
 # End the script
 clean-exit
